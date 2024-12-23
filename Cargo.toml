@@ -1,0 +1,12 @@
+[package]
+name = "simplepir"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+discrete-gaussian = "0.0.6"
+rand = "0.8.5"
+ark-ff = "0.4.0"
+ark-std = "0.4.0"
+ark-test-curves = "0.4.0"
+ark-bn254 = "0.4.0"
