@@ -1,5 +1,5 @@
 use ark_ff::{Field, PrimeField};
-use rand::SeedableRng;
+use rand::{thread_rng, SeedableRng};
 use std::ops::{Add, Mul, Neg, Sub};
 
 #[derive(Clone, Debug)]
@@ -25,11 +25,8 @@ impl<F: Field> Matrix<F> {
         }
     }
 
-    pub fn from_random(rows: usize, cols: usize, seed: Option<u64>) -> Self {
-        let mut rng = match seed {
-            Some(s) => rand::rngs::StdRng::seed_from_u64(s),
-            None => rand::rngs::StdRng::from_entropy(),
-        };
+    pub fn from_random(rows: usize, cols: usize) -> Self {
+        let mut rng = thread_rng();
 
         Self {
             data: (0..rows)
@@ -97,7 +94,7 @@ impl<F: Field> Matrix<F> {
         }
     }
 
-    pub fn mul_vector(&self, vector: &Vector<F>) -> Vector<F> {
+    pub fn mul_vec(&self, vector: &Vector<F>) -> Vector<F> {
         assert_eq!(self.cols(), vector.data.len());
         let mut result = Vector::new(vec![F::zero(); self.rows()]);
         for i in 0..self.rows() {
@@ -196,6 +193,11 @@ impl<F: Field> Vector<F> {
                 .map(|(a, b)| *a - *b)
                 .collect(),
         }
+    }
+
+    pub fn dot(&self, other: &Self) -> F {
+        assert_eq!(self.data.len(), other.data.len());
+        self.data.iter().zip(other.data.iter()).map(|(a, b)| *a * *b).sum()
     }
 
     pub fn neg(&self) -> Self {
