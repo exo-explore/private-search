@@ -17,9 +17,13 @@ pub fn generate_example_params<Fp: PrimeField>(n: usize, m: usize, stdev: f64) -
     Params { a, p, n, m, stdev }
 }
 
+fn to_u64<Fp: PrimeField>(x: Fp) -> u64 {
+    let x_bytes = x.into_bigint().to_bytes_le();
+    u64::from_le_bytes(x_bytes[0..8].try_into().unwrap())
+}
+
 fn get_q_over_p<Fp: PrimeField>(params: &Params<Fp>) -> u64 {
-    let q_bytes = Fp::MODULUS.to_bytes_le();
-    let q = u64::from_le_bytes(q_bytes[0..8].try_into().unwrap());
+    let q = to_u64(Fp::from_bigint(Fp::MODULUS).unwrap());
     q / params.p
 }
 
@@ -47,18 +51,10 @@ pub fn decrypt<Fp: PrimeField>(params: &Params<Fp>, secret: &Vector<Fp>, hint: &
     let delta = get_q_over_p(params);
     let a_s = hint.mul_vec(secret);
     let c_minus_a_s = &ciphertext - &a_s;
-    
-    // Get the first element since we're decrypting a single value
     let noised = c_minus_a_s[index];
     
-    // Convert to u64 for rounding arithmetic
-    let noised_u64 = noised.into_bigint().to_bytes_le();
-    let noised_u64 = u64::from_le_bytes(noised_u64[0..8].try_into().unwrap());
-    
-    // Round to nearest multiple of delta
-    let denoised = (noised_u64 + delta / 2) / delta;
-    
-    // Reduce modulo plaintext modulus
+    let noised_u64 = to_u64(noised);
+    let denoised = ((noised_u64 as f64 / delta as f64).round() * delta as f64) as u64;
     let result = denoised % params.p;
     
     Fp::from(result)
