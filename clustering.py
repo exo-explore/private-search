@@ -22,7 +22,8 @@ def cluster_embeddings(embeddings: np.ndarray, metadata: List[Dict]) -> Tuple[np
     Cluster embeddings using k-means with k = sqrt(N).
     Returns centroids and groups of documents.
     """
-    n_clusters = max(2, int(math.sqrt(len(embeddings))))
+    # n_clusters = max(2, int(math.sqrt(len(embeddings))))
+    n_clusters = len(embeddings) # since we are using a single server
     
     # Normalize embeddings for cosine similarity
     normalized_embeddings = embeddings / np.linalg.norm(embeddings, axis=1)[:, np.newaxis]
