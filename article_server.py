@@ -2,6 +2,7 @@ import asyncio
 import json
 import numpy as np
 import os
+from datetime import datetime
 from pir import (
     SimplePIRParams, gen_params, gen_hint,
     answer as pir_answer
@@ -12,9 +13,12 @@ class ArticleServer:
     def __init__(self, host='127.0.0.1', port=8889):  # Note different default port
         self.host = host
         self.port = port
-        
-        # Load and process article contents
-        print("Loading article contents database...")
+        self.load_data()
+    
+    def load_data(self):
+        """Load and process article contents"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"\n[{timestamp}] Loading article contents database...")
         articles = []
         article_dir = 'articles'
         
@@ -33,8 +37,21 @@ class ArticleServer:
         self.articles_hint = gen_hint(self.articles_params, self.articles_db)
         self.num_articles = len(articles)
         
-        print(f"Initialized with {len(articles)} articles")
-        print(f"Articles matrix size: {matrix_size}x{matrix_size}")
+        print(f"[{timestamp}] Initialized with {len(articles)} articles")
+        print(f"[{timestamp}] Articles matrix size: {matrix_size}x{matrix_size}")
+    
+    async def update_loop(self):
+        """Periodically update article data"""
+        while True:
+            await asyncio.sleep(15)  # Wait for 1 minute
+            try:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"\n[{timestamp}] Reloading article data...")
+                self.load_data()
+                print(f"[{timestamp}] Article update complete!")
+            except Exception as e:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"[{timestamp}] Error during article update: {e}")
     
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         addr = writer.get_extra_info('peername')
@@ -103,7 +120,11 @@ class ArticleServer:
         )
         
         addr = server.sockets[0].getsockname()
-        print(f'Serving articles on {addr}')
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] Serving articles on {addr}")
+        
+        # Start the update loop
+        asyncio.create_task(self.update_loop())
         
         async with server:
             await server.serve_forever()

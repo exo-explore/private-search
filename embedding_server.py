@@ -1,25 +1,49 @@
 import asyncio
 import json
 import numpy as np
+import os
+from datetime import datetime
 from pir import (
     SimplePIRParams, gen_params, gen_hint,
     answer as pir_answer
 )
+from update import update_embeddings
 
 class EmbeddingServer:
     def __init__(self, host='127.0.0.1', port=8888):
         self.host = host
         self.port = port
+        self.load_data()
         
-        # Load embeddings database
-        print("Loading embeddings database...")
+    def load_data(self):
+        """Load embeddings, metadata, and centroids from disk"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"\n[{timestamp}] Loading embeddings database...")
         self.embeddings_db = np.load('embeddings/embeddings.npy')
+        self.centroids = np.load('embeddings/centroids.npy')
+        with open('embeddings/metadata.json', 'r') as f:
+            self.metadata = json.load(f)
         
         # Initialize PIR for embeddings
         self.embeddings_params = gen_params(m=self.embeddings_db.shape[0])
         self.embeddings_hint = gen_hint(self.embeddings_params, self.embeddings_db)
         
-        print(f"Embeddings shape: {self.embeddings_db.shape}")
+        print(f"[{timestamp}] Embeddings shape: {self.embeddings_db.shape}")
+        print(f"[{timestamp}] Centroids shape: {self.centroids.shape}")
+    
+    async def update_loop(self):
+        """Periodically update embeddings and related data"""
+        while True:
+            await asyncio.sleep(60)  
+            try:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"\n[{timestamp}] Starting scheduled update of embeddings and data...")
+                update_embeddings()
+                self.load_data()
+                print(f"[{timestamp}] Update complete!")
+            except Exception as e:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"[{timestamp}] Error during update: {e}")
     
     async def handle_client(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         addr = writer.get_extra_info('peername')
@@ -37,6 +61,9 @@ class EmbeddingServer:
                 },
                 'hint': self.embeddings_hint.tolist(),
                 'a': self.embeddings_params.a.tolist(),
+                'centroids': self.centroids.tolist(),
+                'metadata': self.metadata,
+                'embeddings': self.embeddings_db.tolist()
             }
             
             # Send length-prefixed data
@@ -58,13 +85,21 @@ class EmbeddingServer:
                 # Read query data
                 data = await reader.readexactly(length)
                 query_data = json.loads(data.decode())
-                query = np.array(query_data['query'])
                 
-                ans = pir_answer(query, self.embeddings_db, self.embeddings_params.q)
-                
-                response = {
-                    'answer': ans.tolist()
-                }
+                if query_data.get('type') == 'update':
+                    # Send current data
+                    response = {
+                        'centroids': self.centroids.tolist(),
+                        'metadata': self.metadata,
+                        'embeddings': self.embeddings_db.tolist()
+                    }
+                else:
+                    # Handle PIR query
+                    query = np.array(query_data['query'])
+                    ans = pir_answer(query, self.embeddings_db, self.embeddings_params.q)
+                    response = {
+                        'answer': ans.tolist()
+                    }
                 
                 # Send length-prefixed response
                 response_data = json.dumps(response).encode()
@@ -88,6 +123,9 @@ class EmbeddingServer:
         
         addr = server.sockets[0].getsockname()
         print(f'Serving embeddings on {addr}')
+        
+        # Start the update loop
+        asyncio.create_task(self.update_loop())
         
         async with server:
             await server.serve_forever()

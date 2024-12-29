@@ -1,6 +1,7 @@
 import asyncio
 import json
 import numpy as np
+from datetime import datetime
 from typing import List, Optional, Union, Dict, Tuple
 from embeddings import EmbeddingCreator
 from pir import (
@@ -32,6 +33,12 @@ class PIRClient:
         self.num_articles: Optional[int] = None
 
         self._embedding_creator = EmbeddingCreator()
+        
+        # New attributes for embeddings and metadata
+        self.embeddings: Optional[np.ndarray] = None
+        self.centroids: Optional[np.ndarray] = None
+        self.metadata: Optional[Dict] = None
+        self._update_task: Optional[asyncio.Task] = None
     
     async def _send_data(self, writer: asyncio.StreamWriter, data: dict):
         encoded = json.dumps(data).encode()
@@ -44,40 +51,26 @@ class PIRClient:
         length = int((await reader.readline()).decode().strip())
         data = await reader.readexactly(length)
         return json.loads(data.decode())
-        
-    async def connect(self):
-        self.embedding_reader, self.embedding_writer = await asyncio.open_connection(
-            self.embedding_host, self.embedding_port
-        )
-        
-        self.article_reader, self.article_writer = await asyncio.open_connection(
-            self.article_host, self.article_port
-        )
-        
-        emb_data = await self._receive_data(self.embedding_reader)
-        self.embeddings_params = SimplePIRParams(
-            a=np.array(emb_data['a']),
-            q=emb_data['params']['q'],
-            p=emb_data['params']['p'],
-            n=emb_data['params']['n'],
-            m=emb_data['params']['m'],
-            std_dev=emb_data['params']['std_dev']
-        )
-        self.embeddings_hint = np.array(emb_data['hint'])
-        self.embeddings_secret = gen_secret(self.embeddings_params.q, self.embeddings_params.n)
-        
-        art_data = await self._receive_data(self.article_reader)
-        self.articles_params = SimplePIRParams(
-            a=np.array(art_data['a']),
-            q=art_data['params']['q'],
-            p=art_data['params']['p'],
-            n=art_data['params']['n'],
-            m=art_data['params']['m'],
-            std_dev=art_data['params']['std_dev']
-        )
-        self.articles_hint = np.array(art_data['hint'])
-        self.articles_secret = gen_secret(self.articles_params.q, self.articles_params.n)
-        self.num_articles = art_data['num_articles']
+    
+    async def _update_loop(self):
+        """Periodically request updated data from the server"""
+        while True:
+            await asyncio.sleep(60)  # Wait for 1 minute
+            try:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"\n[{timestamp}] Requesting updated data from server...")
+                await self._send_data(self.embedding_writer, {'type': 'update'})
+                data = await self._receive_data(self.embedding_reader)
+                
+                self.embeddings = np.array(data['embeddings'])
+                self.centroids = np.array(data['centroids'])
+                self.metadata = data['metadata']
+                print(f"[{timestamp}] Successfully updated embeddings and metadata from server")
+                print(f"[{timestamp}] New embeddings shape: {self.embeddings.shape}")
+                print(f"[{timestamp}] New centroids shape: {self.centroids.shape}")
+            except Exception as e:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"[{timestamp}] Error updating data: {e}")
     
     async def retrieve_embedding(self, index: int) -> np.ndarray:
         if any(x is None for x in [self.embeddings_params, self.embeddings_secret, self.embeddings_hint]):
@@ -121,7 +114,67 @@ class PIRClient:
             return numbers_to_string(numbers)
         return ""
     
+    async def connect(self):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] Connecting to servers...")
+        
+        self.embedding_reader, self.embedding_writer = await asyncio.open_connection(
+            self.embedding_host, self.embedding_port
+        )
+        
+        self.article_reader, self.article_writer = await asyncio.open_connection(
+            self.article_host, self.article_port
+        )
+        
+        print(f"[{timestamp}] Connected to servers, downloading initial data...")
+        
+        emb_data = await self._receive_data(self.embedding_reader)
+        self.embeddings_params = SimplePIRParams(
+            a=np.array(emb_data['a']),
+            q=emb_data['params']['q'],
+            p=emb_data['params']['p'],
+            n=emb_data['params']['n'],
+            m=emb_data['params']['m'],
+            std_dev=emb_data['params']['std_dev']
+        )
+        self.embeddings_hint = np.array(emb_data['hint'])
+        self.embeddings_secret = gen_secret(self.embeddings_params.q, self.embeddings_params.n)
+        
+        # Store embeddings and metadata
+        self.embeddings = np.array(emb_data['embeddings'])
+        self.centroids = np.array(emb_data['centroids'])
+        self.metadata = emb_data['metadata']
+        
+        art_data = await self._receive_data(self.article_reader)
+        self.articles_params = SimplePIRParams(
+            a=np.array(art_data['a']),
+            q=art_data['params']['q'],
+            p=art_data['params']['p'],
+            n=art_data['params']['n'],
+            m=art_data['params']['m'],
+            std_dev=art_data['params']['std_dev']
+        )
+        self.articles_hint = np.array(art_data['hint'])
+        self.articles_secret = gen_secret(self.articles_params.q, self.articles_params.n)
+        self.num_articles = art_data['num_articles']
+        
+        # Start the update loop
+        self._update_task = asyncio.create_task(self._update_loop())
+    
+    def find_closest_embedding(self, query_embedding: np.ndarray, embeddings: Optional[np.ndarray] = None) -> int:
+        if embeddings is None:
+            embeddings = self.embeddings
+        distances = np.linalg.norm(embeddings - query_embedding, axis=1)
+        return np.argmin(distances)
+    
     async def close(self):
+        if self._update_task:
+            self._update_task.cancel()
+            try:
+                await self._update_task
+            except asyncio.CancelledError:
+                pass
+        
         if self.embedding_writer:
             self.embedding_writer.close()
             await self.embedding_writer.wait_closed()
@@ -129,15 +182,10 @@ class PIRClient:
             self.article_writer.close()
             await self.article_writer.wait_closed()
 
-    def find_closest_embedding(self, query_embedding: np.ndarray, embeddings: np.ndarray) -> int:
-        distances = np.linalg.norm(embeddings - query_embedding, axis=1)
-        return np.argmin(distances)
-
 async def main():
     import time
 
     client = PIRClient()
-    embeddings = np.load('embeddings/embeddings.npy')
 
     try:
         print("Connecting to servers...")
@@ -154,7 +202,7 @@ async def main():
                 
                 # Create embedding and find closest match
                 query_embedding = client._embedding_creator.create_embedding(query)
-                closest_embedding_index = client.find_closest_embedding(query_embedding, embeddings)
+                closest_embedding_index = client.find_closest_embedding(query_embedding)
                 
                 # Retrieve the article
                 article = await client.retrieve_article(closest_embedding_index)
