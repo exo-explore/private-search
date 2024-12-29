@@ -1,8 +1,8 @@
+import json
 import yfinance as yf
 import requests
 from datetime import datetime
 import pytz
-from tabulate import tabulate
 import time
 from typing import Dict, Union, Tuple
 
@@ -83,35 +83,22 @@ def get_market_prices() -> Tuple[Dict[str, float], Dict[str, float], str]:
     return stock_prices, crypto_prices, current_time
 
 def format_prices(stock_prices: Dict[str, float], crypto_prices: Dict[str, float], timestamp: str) -> str:
-    """
-    Formats the prices into a readable string.
+
+    output = {
+        "timestamp": timestamp,
+        "stocks": {},
+        "cryptocurrencies": {}
+    }
     
-    Args:
-        stock_prices: Dictionary of stock prices
-        crypto_prices: Dictionary of crypto prices
-        timestamp: Current timestamp
-        
-    Returns:
-        Formatted string with all prices
-    """
-    stock_data = [
-        [name, f"${price:,.2f}" if price is not None else "N/A"]
-        for name, price in stock_prices.items()
-    ]
+    # Format stock prices
+    for name, price in stock_prices.items():
+        output["stocks"][name] = f"${price:,.2f}" if price is not None else "N/A"
     
-    crypto_data = [
-        [name, f"${price:,.2f}" if price is not None else "N/A"]
-        for name, price in crypto_prices.items()
-    ]
+    # Format crypto prices
+    for name, price in crypto_prices.items():
+        output["cryptocurrencies"][name] = f"${price:,.2f}" if price is not None else "N/A"
     
-    output = []
-    output.append(f"\nMarket Prices as of {timestamp}\n")
-    output.append("Stocks:")
-    output.append(tabulate(stock_data, headers=['Company', 'Price'], tablefmt='grid'))
-    output.append("\nCryptocurrencies:")
-    output.append(tabulate(crypto_data, headers=['Cryptocurrency', 'Price'], tablefmt='grid'))
-    
-    return "\n".join(output)
+    return json.dumps(output, indent=2)
 
 if __name__ == "__main__":
     # Example usage
