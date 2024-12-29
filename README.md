@@ -1,11 +1,17 @@
 # Private Market Data Search
 
-A privacy-preserving search system for market prices using PIR (Private Information Retrieval).
+A privacy-preserving search system for real-time market prices using PIR (Private Information Retrieval). Get live stock and cryptocurrency prices while maintaining privacy.
+
+## Features
+- Live stock prices from major companies (Apple, NVIDIA, Microsoft, etc.)
+- Live cryptocurrency prices (Bitcoin, Ethereum, Solana)
+- Privacy-preserving queries using PIR
+- Automatic price updates every minute
 
 ## Setup
 
 ```bash
-pip install numpy yfinance requests sentence-transformers
+pip install numpy yfinance requests tabulate sentence-transformers scikit-learn
 ```
 
 ## Usage
@@ -29,5 +35,7 @@ python client.py
    - "bitcoin price"
    - "tesla stock"
    - "nvidia shares"
+   - "eth price"
+   - "apple stock price"
 
 The system automatically updates prices every minute. 

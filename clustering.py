@@ -4,33 +4,8 @@ import numpy as np
 from typing import Dict, List, Tuple
 import glob
 from sklearn.cluster import KMeans
-from sklearn.metrics.pairwise import cosine_similarity
 import math
 from embeddings import EmbeddingCreator
-import argparse
-
-def load_article(filepath: str) -> Dict:
-    """Load an article from a text file and return its metadata."""
-    with open(filepath, 'r') as f:
-        lines = f.readlines()
-    
-    # Extract content and metadata
-    content = []
-    url = ""
-    title = os.path.basename(filepath).replace('.txt', '')
-    
-    for line in lines:
-        line = line.strip()
-        if line.startswith('URL:'):
-            url = line[4:].strip()
-        else:
-            content.append(line)
-    
-    return {
-        "title": title,
-        "content": "\n".join(content),
-        "url": url
-    }
 
 def load_price_document(filepath: str) -> Dict:
     """Load a price document and return its metadata."""
@@ -39,8 +14,7 @@ def load_price_document(filepath: str) -> Dict:
     
     return {
         "title": os.path.basename(filepath).replace('.txt', ''),
-        "content": content,
-        "url": ""  # No URL needed for price documents
+        "content": content
     }
 
 def cluster_embeddings(embeddings: np.ndarray, metadata: List[Dict]) -> Tuple[np.ndarray, List[List[Dict]]]:
@@ -99,7 +73,6 @@ def process_articles(input_dir: str, output_dir: str, model_name: str = 'all-Min
             # Store metadata
             metadata = {
                 "title": doc["title"],
-                "url": doc["url"],
                 "filepath": os.path.relpath(filepath, os.path.dirname(input_dir)),
                 "embedding_index": i - 1
             }
@@ -148,16 +121,4 @@ def process_articles(input_dir: str, output_dir: str, model_name: str = 'all-Min
         print("Documents:", ", ".join(article["title"] for article in group[:3]))
         if len(group) > 3:
             print("...")
-        print()
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process and cluster articles')
-    parser.add_argument('--input-dir', type=str, required=True,
-                      help='Directory containing input text files')
-    parser.add_argument('--output-dir', type=str, required=True,
-                      help='Directory to save embeddings and clusters')
-    parser.add_argument('--model', type=str, default='all-MiniLM-L6-v2',
-                      help='Model name to use for embeddings')
-    
-    args = parser.parse_args()
-    process_articles(args.input_dir, args.output_dir, args.model) 
+        print() 

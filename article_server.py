@@ -43,7 +43,7 @@ class ArticleServer:
     async def update_loop(self):
         """Periodically update article data"""
         while True:
-            await asyncio.sleep(15)  # Wait for 1 minute
+            await asyncio.sleep(60)  # Wait for 1 minute
             try:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 print(f"\n[{timestamp}] Reloading article data...")
