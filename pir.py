@@ -70,10 +70,9 @@ def answer(query_cipher: np.ndarray, db: np.ndarray, q: int) -> np.ndarray:
     # Transpose db to work with rows
     db = db.T
     
-    result = np.zeros(db.shape[0], dtype=np.uint64)
-    for i in range(db.shape[0]):
-        result[i] = int(linalg.blas.ddot(db[i, :].astype(np.float64),
-                                        query_cipher.astype(np.float64))) % q
+    result = linalg.blas.dgemv(alpha=1.0,
+                              a=db.astype(np.float64),
+                              x=query_cipher.astype(np.float64)) % q
     
     return result.astype(np.uint64)
 
