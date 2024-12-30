@@ -9,19 +9,13 @@ from pir import (
     recover as pir_recover, recover_row as pir_recover_row
 )
 from utils import numbers_to_string
+import aiohttp
+import time
 
 class PIRClient:
-    def __init__(self, embedding_host='127.0.0.1', embedding_port=8888,
-                 article_host='127.0.0.1', article_port=8889):
-        self.embedding_host = embedding_host
-        self.embedding_port = embedding_port
-        self.embedding_reader: Optional[asyncio.StreamReader] = None
-        self.embedding_writer: Optional[asyncio.StreamWriter] = None
-        
-        self.article_host = article_host
-        self.article_port = article_port
-        self.article_reader: Optional[asyncio.StreamReader] = None
-        self.article_writer: Optional[asyncio.StreamWriter] = None
+    def __init__(self, server_url='http://127.0.0.1:8000'):
+        self.server_url = server_url
+        self.session: Optional[aiohttp.ClientSession] = None
         
         self.embeddings_params: Optional[SimplePIRParams] = None
         self.embeddings_hint: Optional[np.ndarray] = None
@@ -40,18 +34,6 @@ class PIRClient:
         self.metadata: Optional[Dict] = None
         self._update_task: Optional[asyncio.Task] = None
     
-    async def _send_data(self, writer: asyncio.StreamWriter, data: dict):
-        encoded = json.dumps(data).encode()
-        writer.write(f"{len(encoded)}\n".encode())
-        await writer.drain()
-        writer.write(encoded)
-        await writer.drain()
-    
-    async def _receive_data(self, reader: asyncio.StreamReader) -> dict:
-        length = int((await reader.readline()).decode().strip())
-        data = await reader.readexactly(length)
-        return json.loads(data.decode())
-    
     async def _update_loop(self):
         """Periodically request updated data from the server"""
         while True:
@@ -59,8 +41,9 @@ class PIRClient:
             try:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 print(f"\n[{timestamp}] Requesting updated data from server...")
-                await self._send_data(self.embedding_writer, {'type': 'update'})
-                data = await self._receive_data(self.embedding_reader)
+                
+                async with self.session.post(f"{self.server_url}/embedding/update", json={'type': 'update'}) as response:
+                    data = await response.json()
                 
                 self.embeddings = np.array(data['embeddings'])
                 self.centroids = np.array(data['centroids'])
@@ -78,12 +61,9 @@ class PIRClient:
         
         secret, query_cipher = pir_query(index, self.embeddings_params.m, self.embeddings_params)
         
-        await self._send_data(self.embedding_writer, {
-            'query': query_cipher.tolist()
-        })
-        
-        response = await self._receive_data(self.embedding_reader)
-        answer_cipher = np.array(response['answer'])
+        async with self.session.post(f"{self.server_url}/embedding/query", json={'query': query_cipher.tolist()}) as response:
+            data = await response.json()
+            answer_cipher = np.array(data['answer'])
         
         recovered = pir_recover_row(secret, self.embeddings_hint, answer_cipher, 
                                   query_cipher, self.embeddings_params)
@@ -98,12 +78,9 @@ class PIRClient:
         
         secret, query_cipher = pir_query(index, self.articles_params.m, self.articles_params)
         
-        await self._send_data(self.article_writer, {
-            'query': query_cipher.tolist()
-        })
-        
-        response = await self._receive_data(self.article_reader)
-        answer_cipher = np.array(response['answer'])
+        async with self.session.post(f"{self.server_url}/article/query", json={'query': query_cipher.tolist()}) as response:
+            data = await response.json()
+            answer_cipher = np.array(data['answer'])
         
         recovered_row = pir_recover_row(secret, self.articles_hint, answer_cipher, 
                                       query_cipher, self.articles_params)
@@ -116,26 +93,23 @@ class PIRClient:
     
     async def connect(self):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{timestamp}] Connecting to servers...")
+        print(f"[{timestamp}] Connecting to server...")
         
-        self.embedding_reader, self.embedding_writer = await asyncio.open_connection(
-            self.embedding_host, self.embedding_port
-        )
+        self.session = aiohttp.ClientSession()
         
-        self.article_reader, self.article_writer = await asyncio.open_connection(
-            self.article_host, self.article_port
-        )
+        print(f"[{timestamp}] Connected to server, downloading initial data...")
         
-        print(f"[{timestamp}] Connected to servers, downloading initial data...")
+        # Get embedding setup data
+        async with self.session.get(f"{self.server_url}/embedding/setup") as response:
+            emb_data = await response.json()
         
-        emb_data = await self._receive_data(self.embedding_reader)
         self.embeddings_params = SimplePIRParams(
-            a=np.array(emb_data['a']),
-            q=emb_data['params']['q'],
-            p=emb_data['params']['p'],
             n=emb_data['params']['n'],
             m=emb_data['params']['m'],
-            std_dev=emb_data['params']['std_dev']
+            q=emb_data['params']['q'],
+            p=emb_data['params']['p'],
+            std_dev=emb_data['params']['std_dev'],
+            seed=emb_data['params']['seed']
         )
         self.embeddings_hint = np.array(emb_data['hint'])
         self.embeddings_secret = gen_secret(self.embeddings_params.q, self.embeddings_params.n)
@@ -145,14 +119,17 @@ class PIRClient:
         self.centroids = np.array(emb_data['centroids'])
         self.metadata = emb_data['metadata']
         
-        art_data = await self._receive_data(self.article_reader)
+        # Get article setup data
+        async with self.session.get(f"{self.server_url}/article/setup") as response:
+            art_data = await response.json()
+        
         self.articles_params = SimplePIRParams(
-            a=np.array(art_data['a']),
-            q=art_data['params']['q'],
-            p=art_data['params']['p'],
             n=art_data['params']['n'],
             m=art_data['params']['m'],
-            std_dev=art_data['params']['std_dev']
+            q=art_data['params']['q'],
+            p=art_data['params']['p'],
+            std_dev=art_data['params']['std_dev'],
+            seed=art_data['params']['seed']
         )
         self.articles_hint = np.array(art_data['hint'])
         self.articles_secret = gen_secret(self.articles_params.q, self.articles_params.n)
@@ -175,20 +152,14 @@ class PIRClient:
             except asyncio.CancelledError:
                 pass
         
-        if self.embedding_writer:
-            self.embedding_writer.close()
-            await self.embedding_writer.wait_closed()
-        if self.article_writer:
-            self.article_writer.close()
-            await self.article_writer.wait_closed()
+        if self.session:
+            await self.session.close()
 
 async def main():
-    import time
-
     client = PIRClient()
 
     try:
-        print("Connecting to servers...")
+        print("Connecting to server...")
         await client.connect()
         print("Connected! Enter your queries (press Ctrl+C to exit):")
         

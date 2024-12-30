@@ -7,27 +7,24 @@ A privacy-preserving search system for real-time market prices using PIR (Privat
 - Live cryptocurrency prices (Bitcoin, Ethereum, Solana)
 - Privacy-preserving queries using PIR
 - Automatic price updates every minute
+- FastAPI-based REST API
+- Interactive API documentation at `/docs`
 
 ## Setup
 
 ```bash
-pip install numpy yfinance requests tabulate sentence-transformers scikit-learn
+pip install numpy yfinance requests tabulate sentence-transformers scikit-learn fastapi uvicorn aiohttp
 ```
 
 ## Usage
 
-1. Start the servers:
+1. Start the server:
 ```bash
-# Terminal 1
-python embedding_server.py
-
-# Terminal 2
-python article_server.py
+python server.py
 ```
 
 2. Run the client:
 ```bash
-# Terminal 3
 python client.py
 ```
 
@@ -38,4 +35,8 @@ python client.py
    - "eth price"
    - "apple stock price"
 
-The system automatically updates prices every minute. 
+The system automatically updates prices every minute.
+
+## API Documentation
+
+Visit `http://127.0.0.1:8000/docs` for interactive API documentation. 

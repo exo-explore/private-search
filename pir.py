@@ -10,15 +10,20 @@ class SimplePIRParams:
     q: int
     p: int
     std_dev: float
-    a: np.ndarray
+    seed: int  # Instead of storing matrix a, store its seed
+
+def gen_matrix_a(seed: int, m: int, n: int, q: int) -> np.ndarray:
+    """Generate matrix a deterministically from a seed"""
+    rng = np.random.RandomState(seed)
+    return rng.randint(0, q, size=(m, n), dtype=np.uint64)
 
 def gen_params(m: int, n: int = 2048, mod_power: int = 17) -> SimplePIRParams:
     q = np.uint64(2**64 - 1)
     p = np.uint64(2**mod_power)
     std_dev = 3.2
-    a = np.random.randint(0, q, size=(m, n), dtype=np.uint64)
+    seed = np.random.randint(0, 2**32)  # Generate random seed
     
-    return SimplePIRParams(n=n, m=m, q=int(q), p=int(p), std_dev=std_dev, a=a)
+    return SimplePIRParams(n=n, m=m, q=int(q), p=int(p), std_dev=std_dev, seed=seed)
 
 def gen_secret(q: int, n: int, seed: Optional[int] = None) -> np.ndarray:
     if seed is not None:
@@ -33,20 +38,24 @@ def gen_hint(params: SimplePIRParams, db: np.ndarray) -> np.ndarray:
     offset = (q * (p // 2)) % q
     db_offset = (db_offset + offset) % q
     
-    result = (params.a.T.astype(np.float64) @ db_offset.astype(np.float64)) % q
+    # Generate matrix a from seed
+    a = gen_matrix_a(params.seed, params.m, params.n, params.q)
+    result = (a.T.astype(np.float64) @ db_offset.astype(np.float64)) % q
     
     return result.astype(np.uint64)
 
 def gauss_sample(std_dev: float = 3.2) -> int:
     return int(np.random.normal(0, std_dev)) % 8
 
-def encrypt(secret: np.ndarray, a_matrix: np.ndarray, bits: np.ndarray, q: int, p: int) -> Tuple[np.ndarray, np.ndarray]:
+def encrypt(secret: np.ndarray, seed: int, m: int, n: int, bits: np.ndarray, q: int, p: int) -> Tuple[np.ndarray, np.ndarray]:
     q = np.uint64(q)
     p = np.uint64(p)
     q_over_p = q // p
     
     error = np.array([gauss_sample() for _ in range(len(bits))], dtype=np.uint64)
     
+    # Generate matrix a from seed
+    a_matrix = gen_matrix_a(seed, m, n, q)
     b = linalg.blas.dgemv(alpha=1.0,
                          a=a_matrix.astype(np.float64),
                          x=secret.astype(np.float64)) % q
@@ -60,7 +69,7 @@ def query(index: int, db_size: int, params: SimplePIRParams) -> Tuple[np.ndarray
     query_vector[index] = 1
     
     secret = gen_secret(params.q, params.n)
-    _, query_cipher = encrypt(secret, params.a, query_vector, params.q, params.p)
+    _, query_cipher = encrypt(secret, params.seed, params.m, params.n, query_vector, params.q, params.p)
     
     return secret, query_cipher
 

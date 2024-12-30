@@ -57,10 +57,10 @@ class EmbeddingServer:
                     'm': int(self.embeddings_params.m),
                     'q': int(self.embeddings_params.q),
                     'p': int(self.embeddings_params.p),
-                    'std_dev': float(self.embeddings_params.std_dev)
+                    'std_dev': float(self.embeddings_params.std_dev),
+                    'seed': int(self.embeddings_params.seed)
                 },
                 'hint': self.embeddings_hint.tolist(),
-                'a': self.embeddings_params.a.tolist(),
                 'centroids': self.centroids.tolist(),
                 'metadata': self.metadata,
                 'embeddings': self.embeddings_db.tolist()
