@@ -39,4 +39,30 @@ The system automatically updates prices every minute.
 
 ## API Documentation
 
-Visit `http://127.0.0.1:8000/docs` for interactive API documentation. 
+Visit `http://127.0.0.1:8000/docs` for interactive API documentation.
+
+## Docker Deployment
+
+You can also run the server using Docker:
+
+1. Build the Docker image:
+```bash
+docker build -t private-search .
+```
+
+2. Run the container:
+```bash
+docker run -p 8000:8000 private-search
+```
+
+3. Save the Docker image to a file:
+```bash
+docker save private-search > private-search.tar
+```
+
+4. Load the saved image on another machine:
+```bash
+docker load < private-search.tar
+```
+
+The server will be available at `http://localhost:8000`. You can access the API documentation at `http://localhost:8000/docs`. 
