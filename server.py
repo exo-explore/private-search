@@ -12,8 +12,36 @@ from pir import (
 )
 from update import update_embeddings
 from utils import strings_to_matrix
+from contextlib import asynccontextmanager
+import os
 
-app = FastAPI(title="Private Market Data Search")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle startup and shutdown events"""
+    # Startup
+    try:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"\n[{timestamp}] Running initial update on startup...")
+        update_embeddings()
+        state.load_data()
+        print(f"[{timestamp}] Initial update complete!")
+    except Exception as e:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] Error during initial update: {e}")
+    
+    state._update_task = asyncio.create_task(state.update_loop())
+    
+    yield  # Server is running
+    
+    # Shutdown
+    if state._update_task:
+        state._update_task.cancel()
+        try:
+            await state._update_task
+        except asyncio.CancelledError:
+            pass
+
+app = FastAPI(title="Private Market Data Search", lifespan=lifespan)
 
 # Enable CORS
 app.add_middleware(
@@ -50,39 +78,56 @@ class UpdateResponse(BaseModel):
 # Server state
 class ServerState:
     def __init__(self):
-        self.load_data()
         self._update_task = None
+        
+        # Create necessary directories
+        os.makedirs('embeddings', exist_ok=True)
+        os.makedirs('articles', exist_ok=True)
+        
+        # Initialize with empty state
+        self.embeddings_db = np.zeros((0, 0))
+        self.centroids = np.zeros((0, 0))
+        self.metadata = {'articles': []}
+        self.embeddings_params = gen_params(m=1)  # Minimal params for initial state
+        self.embeddings_hint = np.zeros((0, 0))
+        self.articles_db = np.zeros((0, 0))
+        self.articles_params = gen_params(m=1)  # Minimal params for initial state
+        self.articles_hint = np.zeros((0, 0))
+        self.num_articles = 0
 
     def load_data(self):
         """Load embeddings, metadata, and centroids from disk"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"\n[{timestamp}] Loading embeddings database...")
         
-        # Load embeddings data
-        self.embeddings_db = np.load('embeddings/embeddings.npy')
-        self.centroids = np.load('embeddings/centroids.npy')
-        with open('embeddings/metadata.json', 'r') as f:
-            self.metadata = json.load(f)
-        
-        # Initialize PIR for embeddings
-        self.embeddings_params = gen_params(m=self.embeddings_db.shape[0])
-        self.embeddings_hint = gen_hint(self.embeddings_params, self.embeddings_db)
-        
-        # Load articles
-        articles = []
-        for article_info in self.metadata['articles']:
-            with open(article_info['filepath'], 'r', encoding='utf-8') as f:
-                articles.append(f.read())
-        
-        # Convert articles to matrix
-        self.articles_db, matrix_size = strings_to_matrix(articles)
-        self.articles_params = gen_params(m=matrix_size)
-        self.articles_hint = gen_hint(self.articles_params, self.articles_db)
-        self.num_articles = len(articles)
-        
-        print(f"[{timestamp}] Embeddings shape: {self.embeddings_db.shape}")
-        print(f"[{timestamp}] Centroids shape: {self.centroids.shape}")
-        print(f"[{timestamp}] Articles loaded: {self.num_articles}")
+        try:
+            # Load embeddings data
+            self.embeddings_db = np.load('embeddings/embeddings.npy')
+            self.centroids = np.load('embeddings/centroids.npy')
+            with open('embeddings/metadata.json', 'r') as f:
+                self.metadata = json.load(f)
+            
+            # Initialize PIR for embeddings
+            self.embeddings_params = gen_params(m=self.embeddings_db.shape[0])
+            self.embeddings_hint = gen_hint(self.embeddings_params, self.embeddings_db)
+            
+            # Load articles
+            articles = []
+            for article_info in self.metadata['articles']:
+                with open(article_info['filepath'], 'r', encoding='utf-8') as f:
+                    articles.append(f.read())
+            
+            # Convert articles to matrix
+            self.articles_db, matrix_size = strings_to_matrix(articles)
+            self.articles_params = gen_params(m=matrix_size)
+            self.articles_hint = gen_hint(self.articles_params, self.articles_db)
+            self.num_articles = len(articles)
+            
+            print(f"[{timestamp}] Embeddings shape: {self.embeddings_db.shape}")
+            print(f"[{timestamp}] Centroids shape: {self.centroids.shape}")
+            print(f"[{timestamp}] Articles loaded: {self.num_articles}")
+        except FileNotFoundError:
+            print(f"[{timestamp}] No existing embeddings found. Will create in first update.")
 
     async def update_loop(self):
         """Periodically update data"""
@@ -100,21 +145,6 @@ class ServerState:
 
 # Initialize server state
 state = ServerState()
-
-@app.on_event("startup")
-async def startup_event():
-    """Start the update loop when the application starts"""
-    state._update_task = asyncio.create_task(state.update_loop())
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cancel the update loop when the application shuts down"""
-    if state._update_task:
-        state._update_task.cancel()
-        try:
-            await state._update_task
-        except asyncio.CancelledError:
-            pass
 
 @app.get("/")
 async def root():
@@ -179,4 +209,6 @@ async def embedding_update(request: UpdateRequest):
 
 if __name__ == "__main__":
     import uvicorn
+    
+    # Start the server
     uvicorn.run(app, host="127.0.0.1", port=8000) 
