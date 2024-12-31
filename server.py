@@ -150,6 +150,11 @@ state = ServerState()
 async def root():
     return {"message": "Private Market Data Search API"}
 
+@app.get("/health")
+async def health():
+    """Health check endpoint"""
+    return {"status": "healthy"}
+
 @app.get("/embedding/setup", response_model=SetupResponse)
 async def embedding_setup():
     """Get initial setup data for embeddings"""
