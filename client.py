@@ -12,6 +12,10 @@ from utils import numbers_to_string
 import aiohttp
 import time
 
+# Constants for retry configuration
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # seconds
+
 class PIRClient:
     def __init__(self, server_url='http://127.0.0.1:8000'):
         self.server_url = server_url
@@ -34,6 +38,20 @@ class PIRClient:
         self.metadata: Optional[Dict] = None
         self._update_task: Optional[asyncio.Task] = None
     
+    async def _make_request(self, method: str, endpoint: str, **kwargs) -> Dict:
+        """Make a request to the server with retries"""
+        for attempt in range(MAX_RETRIES):
+            try:
+                async with getattr(self.session, method)(f"{self.server_url}/{endpoint}", **kwargs) as response:
+                    return await response.json()
+            except Exception as e:
+                if attempt == MAX_RETRIES - 1:  # Last attempt
+                    raise  # Re-raise the last exception
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"[{timestamp}] Request failed (attempt {attempt + 1}/{MAX_RETRIES}): {str(e)}")
+                print(f"[{timestamp}] Retrying in {RETRY_DELAY} seconds...")
+                await asyncio.sleep(RETRY_DELAY)
+    
     async def _update_loop(self):
         """Periodically request updated data from the server"""
         while True:
@@ -42,8 +60,7 @@ class PIRClient:
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 print(f"\n[{timestamp}] Requesting updated data from server...")
                 
-                async with self.session.post(f"{self.server_url}/embedding/update", json={'type': 'update'}) as response:
-                    data = await response.json()
+                data = await self._make_request('post', 'embedding/update', json={'type': 'update'})
                 
                 self.embeddings = np.array(data['embeddings'])
                 self.centroids = np.array(data['centroids'])
@@ -61,9 +78,8 @@ class PIRClient:
         
         secret, query_cipher = pir_query(index, self.embeddings_params.m, self.embeddings_params)
         
-        async with self.session.post(f"{self.server_url}/embedding/query", json={'query': query_cipher.tolist()}) as response:
-            data = await response.json()
-            answer_cipher = np.array(data['answer'])
+        data = await self._make_request('post', 'embedding/query', json={'query': query_cipher.tolist()})
+        answer_cipher = np.array(data['answer'])
         
         recovered = pir_recover_row(secret, self.embeddings_hint, answer_cipher, 
                                   query_cipher, self.embeddings_params)
@@ -78,9 +94,8 @@ class PIRClient:
         
         secret, query_cipher = pir_query(index, self.articles_params.m, self.articles_params)
         
-        async with self.session.post(f"{self.server_url}/article/query", json={'query': query_cipher.tolist()}) as response:
-            data = await response.json()
-            answer_cipher = np.array(data['answer'])
+        data = await self._make_request('post', 'article/query', json={'query': query_cipher.tolist()})
+        answer_cipher = np.array(data['answer'])
         
         recovered_row = pir_recover_row(secret, self.articles_hint, answer_cipher, 
                                       query_cipher, self.articles_params)
@@ -95,48 +110,60 @@ class PIRClient:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{timestamp}] Connecting to server...")
         
-        self.session = aiohttp.ClientSession()
-        
-        print(f"[{timestamp}] Connected to server, downloading initial data...")
-        
-        # Get embedding setup data
-        async with self.session.get(f"{self.server_url}/embedding/setup") as response:
-            emb_data = await response.json()
-        
-        self.embeddings_params = SimplePIRParams(
-            n=emb_data['params']['n'],
-            m=emb_data['params']['m'],
-            q=emb_data['params']['q'],
-            p=emb_data['params']['p'],
-            std_dev=emb_data['params']['std_dev'],
-            seed=emb_data['params']['seed']
-        )
-        self.embeddings_hint = np.array(emb_data['hint'])
-        self.embeddings_secret = gen_secret(self.embeddings_params.q, self.embeddings_params.n)
-        
-        # Store embeddings and metadata
-        self.embeddings = np.array(emb_data['embeddings'])
-        self.centroids = np.array(emb_data['centroids'])
-        self.metadata = emb_data['metadata']
-        
-        # Get article setup data
-        async with self.session.get(f"{self.server_url}/article/setup") as response:
-            art_data = await response.json()
-        
-        self.articles_params = SimplePIRParams(
-            n=art_data['params']['n'],
-            m=art_data['params']['m'],
-            q=art_data['params']['q'],
-            p=art_data['params']['p'],
-            std_dev=art_data['params']['std_dev'],
-            seed=art_data['params']['seed']
-        )
-        self.articles_hint = np.array(art_data['hint'])
-        self.articles_secret = gen_secret(self.articles_params.q, self.articles_params.n)
-        self.num_articles = art_data['num_articles']
-        
-        # Start the update loop
-        self._update_task = asyncio.create_task(self._update_loop())
+        for attempt in range(MAX_RETRIES):
+            try:
+                if self.session is None or self.session.closed:
+                    self.session = aiohttp.ClientSession()
+                
+                print(f"[{timestamp}] Connected to server, downloading initial data...")
+                
+                # Get embedding setup data
+                emb_data = await self._make_request('get', 'embedding/setup')
+                
+                self.embeddings_params = SimplePIRParams(
+                    n=emb_data['params']['n'],
+                    m=emb_data['params']['m'],
+                    q=emb_data['params']['q'],
+                    p=emb_data['params']['p'],
+                    std_dev=emb_data['params']['std_dev'],
+                    seed=emb_data['params']['seed']
+                )
+                self.embeddings_hint = np.array(emb_data['hint'])
+                self.embeddings_secret = gen_secret(self.embeddings_params.q, self.embeddings_params.n)
+                
+                # Store embeddings and metadata
+                self.embeddings = np.array(emb_data['embeddings'])
+                self.centroids = np.array(emb_data['centroids'])
+                self.metadata = emb_data['metadata']
+                
+                # Get article setup data
+                art_data = await self._make_request('get', 'article/setup')
+                
+                self.articles_params = SimplePIRParams(
+                    n=art_data['params']['n'],
+                    m=art_data['params']['m'],
+                    q=art_data['params']['q'],
+                    p=art_data['params']['p'],
+                    std_dev=art_data['params']['std_dev'],
+                    seed=art_data['params']['seed']
+                )
+                self.articles_hint = np.array(art_data['hint'])
+                self.articles_secret = gen_secret(self.articles_params.q, self.articles_params.n)
+                self.num_articles = art_data['num_articles']
+                
+                # Start the update loop
+                self._update_task = asyncio.create_task(self._update_loop())
+                return
+                
+            except Exception as e:
+                if attempt == MAX_RETRIES - 1:  # Last attempt
+                    raise  # Re-raise the last exception
+                if self.session and not self.session.closed:
+                    await self.session.close()
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"[{timestamp}] Connection failed (attempt {attempt + 1}/{MAX_RETRIES}): {str(e)}")
+                print(f"[{timestamp}] Retrying in {RETRY_DELAY} seconds...")
+                await asyncio.sleep(RETRY_DELAY)
     
     def find_closest_embedding(self, query_embedding: np.ndarray, embeddings: Optional[np.ndarray] = None) -> int:
         if embeddings is None:
