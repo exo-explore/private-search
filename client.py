@@ -14,7 +14,7 @@ import time
 
 # Constants for retry configuration
 MAX_RETRIES = 3
-RETRY_DELAY = 5  # seconds
+RETRY_DELAY = 1  # seconds
 
 class PIRClient:
     def __init__(self, server_url='http://127.0.0.1:8000'):
