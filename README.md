@@ -17,6 +17,20 @@ A privacy-preserving search system based on Private Information Retrieval (PIR) 
 4. Using SimplePIR, the client privately retrieves matching documents
 5. All queries remain private - the server never sees what you're searching for
 
+## Animations
+
+### Normal Generation
+![Normal Generation](normal-generation.svg)
+*When asked about the weather, an LLM generates tokens sequentially, potentially hallucinating "cold" based on its training data rather than current conditions.*
+
+### Search Generation with Privacy
+![Private Search Generation](search-generation.svg)
+*With real-time search, the LLM first retrieves current weather data and incorporates it into its generation*
+
+### Homomorphic Addition
+![Homomorphic Addition](homomorphic-addition.svg)
+*Homomorphic addition of two encrypted vectors*
+
 ## Setup
 
 ```bash
