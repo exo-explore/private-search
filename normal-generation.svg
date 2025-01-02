@@ -1,0 +1,67 @@
+<svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="150" fill="#000"/>
+  <text x="200" y="25" text-anchor="middle" fill="#fff" font-size="14">Normal Generation</text>
+
+  <!-- The word "The" -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;1;1;1;1;1;1;0" 
+             dur="8s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="40" y="50" width="60" height="30" fill="rgba(255,255,255,0.1)" stroke="#fff"/>
+    <text x="70" y="70" text-anchor="middle" fill="#fff" font-size="14">The</text>
+  </g>
+
+  <!-- The word "weather" -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;1;1;1;1;1;0" 
+             dur="8s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="110" y="50" width="80" height="30" fill="rgba(255,255,255,0.1)" stroke="#fff"/>
+    <text x="150" y="70" text-anchor="middle" fill="#fff" font-size="14">weather</text>
+  </g>
+
+  <!-- The word "is" -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;1;1;1;1;0" 
+             dur="8s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="200" y="50" width="40" height="30" fill="rgba(255,255,255,0.1)" stroke="#fff"/>
+    <text x="220" y="70" text-anchor="middle" fill="#fff" font-size="14">is</text>
+  </g>
+
+  <!-- The word "cold" with red highlight -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;0;1;1;1;0" 
+             dur="8s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="250" y="50" width="60" height="30" fill="rgba(255,0,0,0.2)" stroke="#ff0000"/>
+    <text x="280" y="70" text-anchor="middle" fill="#fff" font-size="14">cold</text>
+  </g>
+
+  <!-- Arrow pointing to "cold" -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;1;1;0" 
+             dur="8s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <path d="M 280 110 L 280 90" stroke="#ff0000" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="280" y="125" text-anchor="middle" fill="#ff0000" font-size="12">Hallucination</text>
+  </g>
+
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="6" markerHeight="4" 
+    refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 6 2, 0 4" fill="#ff0000"/>
+    </marker>
+  </defs>
+</svg>

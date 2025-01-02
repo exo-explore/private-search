@@ -1,0 +1,126 @@
+<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="200" fill="#000"/>
+  <text x="200" y="25" text-anchor="middle" fill="#fff" font-size="14">Augmented Generation with Search</text>
+
+  <!-- Phone Icon (Client) -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;1;1;1;1;1;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="168" y="140" width="30" height="45" rx="3" fill="none" stroke="#fff"/>
+    <rect x="175" y="145" width="16" height="25" fill="#333"/>
+    <circle cx="183" cy="175" r="3" fill="#fff"/>
+  </g>
+
+  <!-- Database Icon (Server) -->
+  <g opacity="0" transform="translate(355,160)">
+    <animate attributeName="opacity" 
+             values="0;0;1;1;1;1;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <path d="M -20,-15 
+             C -20,-20 20,-20 20,-15
+             L 20,15
+             C 20,20 -20,20 -20,15 Z" 
+          fill="none" stroke="#fff"/>
+    <path d="M -20,-5 C -20,0 20,0 20,-5" fill="none" stroke="#fff"/>
+    <path d="M -20,5 C -20,10 20,10 20,5" fill="none" stroke="#fff"/>
+  </g>
+
+  <!-- The word "The" -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;1;1;1;1;1;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="40" y="50" width="60" height="30" fill="rgba(255,255,255,0.1)" stroke="#fff"/>
+    <text x="70" y="70" text-anchor="middle" fill="#fff" font-size="14">The</text>
+  </g>
+
+  <!-- The word "weather" -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;1;1;1;1;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="110" y="50" width="80" height="30" fill="rgba(255,255,255,0.1)" stroke="#fff"/>
+    <text x="150" y="70" text-anchor="middle" fill="#fff" font-size="14">weather</text>
+  </g>
+
+  <!-- The word "is" -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;1;1;1;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="200" y="50" width="40" height="30" fill="rgba(255,255,255,0.1)" stroke="#fff"/>
+    <text x="220" y="70" text-anchor="middle" fill="#fff" font-size="14">is</text>
+  </g>
+
+  <!-- API Request Arrow -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;0;1;1;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <path d="M 200 140 L 330 140" stroke="#ff9900" stroke-width="2" marker-end="url(#apiArrow)"/>
+    <text x="265" y="135" text-anchor="middle" fill="#ff9900" font-size="12">Search for current weather in Austin, TX</text>
+  </g>
+
+  <!-- API Response Arrow -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;1;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <path d="M 330 160 L 200 160" stroke="#ff9900" stroke-width="2" marker-end="url(#apiArrow)"/>
+    <text x="265" y="175" text-anchor="middle" fill="#ff9900" font-size="12">Response: 72°F</text>
+  </g>
+
+  <!-- Privacy Warning -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;1;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <text x="265" y="195" text-anchor="middle" fill="#ff0000" font-size="10">⚠️ Server can see query and response</text>
+  </g>
+
+  <!-- The word "72°F" with green highlight -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;0;1;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="250" y="50" width="70" height="30" fill="rgba(0,255,0,0.2)" stroke="#00ff00"/>
+    <text x="285" y="70" text-anchor="middle" fill="#fff" font-size="14">72°F</text>
+  </g>
+
+  <!-- Verified Data Indicator -->
+  <g opacity="0">
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;0;0;1;1;0" 
+             dur="12s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <text x="285" y="95" text-anchor="middle" fill="#00ff00" font-size="12">✓ Real-Time Data</text>
+  </g>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="apiArrow" markerWidth="6" markerHeight="4" 
+    refX="5" refY="2" orient="auto">
+      <polygon points="0 0, 6 2, 0 4" fill="#ff9900"/>
+    </marker>
+  </defs>
+</svg>
