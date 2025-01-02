@@ -1,6 +1,8 @@
-# Private Search Implementation
+# EXO Private Search
 
-A privacy-preserving search system based on Private Information Retrieval (PIR) techniques. This implementation allows you to search through data while maintaining query privacy - the server never learns what you're searching for.
+A privacy-preserving search system based on Private Information Retrieval (PIR) techniques, inspired by [EXO Labs' research](https://blog.exolabs.net/day-8/). This implementation allows you to search through data while maintaining query privacy - the server never learns what you're searching for.
+
+![Private Search Animation](https://blog.exolabs.net/images/day-8/private-search.gif)
 
 ## Features
 - Privacy-preserving search using PIR
@@ -11,11 +13,15 @@ A privacy-preserving search system based on Private Information Retrieval (PIR) 
 
 ## How It Works
 
+![Architecture Overview](https://blog.exolabs.net/images/day-8/architecture.png)
+
 1. Documents are converted into embeddings and clustered for efficient searching
 2. The client downloads cluster centroids (~32 kB for a 1 GB database)
 3. The client locally compares query vectors to centroids to find relevant clusters
 4. Using SimplePIR, the client privately retrieves matching documents
 5. All queries remain private - the server never sees what you're searching for
+
+![Search Process](https://blog.exolabs.net/images/day-8/search-process.gif)
 
 ## Setup
 
