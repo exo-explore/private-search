@@ -1,6 +1,6 @@
-# [EXO Private Search](https://blog.exolabs.net/day-8/)
+# EXO Private Search
 
-A privacy-preserving search system based on Private Information Retrieval (PIR) techniques. This implementation allows you to search through data while maintaining query privacy - the server never learns what you're searching for.
+A privacy-preserving search system based on [MIT's Tiptoe paper](https://people.csail.mit.edu/nickolai/papers/henzinger-tiptoe.pdf). This implementation allows you to search through data while maintaining query privacy - the server never learns what you're searching for. For more details, see our [blog](https://blog.exolabs.net/day-8/).
 
 ## Features
 - Privacy-preserving search using PIR
@@ -17,22 +17,10 @@ A privacy-preserving search system based on Private Information Retrieval (PIR) 
 4. Using SimplePIR, the client privately retrieves matching documents
 5. All queries remain private - the server never sees what you're searching for
 
-## Animations
+![Architecture Animations](architecture.svg)
 
-### Normal Generation
-![Normal Generation](normal-generation.svg)
+*Architecture overview of private search with homomorphic encryption. The query is encrypted before being sent to the server, which processes it without being able to see the contents. The encrypted results are sent back to the client for decryption.*
 
-*When asked about the weather, an LLM generates tokens sequentially, potentially hallucinating "cold" based on its training data rather than current conditions.*
-
-### Search Generation with Privacy
-![Private Search Generation](search-generation.svg)
-
-*With real-time search, the LLM first retrieves current weather data and incorporates it into its generation*
-
-### Homomorphic Addition
-![Homomorphic Addition](homomorphic-addition.svg)
-
-*Homomorphic addition of two encrypted vectors*
 
 ## Setup
 

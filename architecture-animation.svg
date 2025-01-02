@@ -1,0 +1,424 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#000000"/>
+
+  <!-- iPhone on the left -->
+  <g transform="translate(50, 100)">
+    <!-- Phone frame -->
+    <rect x="0" y="0" width="180" height="390" rx="35" fill="#333" />
+    
+    <!-- Screen -->
+    <rect x="8" y="8" width="164" height="374" rx="30" fill="#111" />
+    
+    <!-- Notch -->
+    <path d="M 65 20 
+             q 0 -5 8 -5 
+             h 34 
+             q 8 0 8 5
+             v 5
+             q 0 5 -8 5
+             h -34
+             q -8 0 -8 -5
+             v -5" 
+          fill="#333"/>
+    
+    <!-- Chat interface - using SVG elements instead of foreignObject -->
+    <g transform="translate(23, 58)">
+      <!-- User message - right aligned, narrower -->
+      <g transform="translate(40, 0)">
+        <rect x="0" y="0" width="100" height="65" rx="15" fill="#222">
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+          <animate attributeName="fill" 
+                   values="#222;#222;#222;#222;#222;#222;#ff6b6b;#ff6b6b;#222;#222;#222;#222;#222;#222;#222;#222;#222;#222;#222;#222" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </rect>
+        <text x="10" y="22" fill="white" font-family="Arial" font-size="12">
+          What caused
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </text>
+        <text x="10" y="37" fill="white" font-family="Arial" font-size="12">
+          the Cybertruck
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </text>
+        <text x="10" y="52" fill="white" font-family="Arial" font-size="12">
+          explosion?
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </text>
+      </g>
+
+      <!-- AI response - left aligned, narrower -->
+      <g>
+        <rect x="0" y="75" width="100" height="65" rx="15" fill="#444">
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </rect>
+        <text x="10" y="97" fill="white" font-family="Arial" font-size="12">
+          Elon Musk just
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </text>
+        <text x="10" y="112" fill="white" font-family="Arial" font-size="12">
+          tweeted.
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </text>
+        <text x="10" y="127" fill="#0084ff" font-family="Arial" font-size="12" text-decoration="underline">
+          t.co/69420
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </text>
+        <!-- Adding underline since SVG text doesn't support text-decoration -->
+        <line x1="10" y1="129" x2="65" y2="129" stroke="#0084ff" stroke-width="1">
+          <animate attributeName="opacity" 
+                   values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1" 
+                   dur="10s" 
+                   begin="0s" 
+                   repeatCount="indefinite"/>
+        </line>
+      </g>
+    </g>
+  </g>
+
+  <!-- Vector space visualization -->
+  <g transform="translate(300, 250)">
+    <!-- Coordinate system -->
+    <line x1="-50" y1="0" x2="50" y2="0" stroke="#333" stroke-width="1"/>
+    <line x1="0" y1="-50" x2="0" y2="50" stroke="#333" stroke-width="1"/>
+    
+    <!-- Clusters -->
+    <circle cx="30" cy="39" r="15" stroke="#FF6B6B" class="cluster" fill-opacity="0.2" fill="#FF6B6B">
+      <animate attributeName="fill-opacity" 
+               values="0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.8;0.8;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2" 
+               dur="10s" 
+               begin="0s" 
+               repeatCount="indefinite"/>
+    </circle>
+    <circle cx="-45" cy="19" r="15" stroke="#4ECDC4" class="cluster" fill-opacity="0.2" fill="#4ECDC4"/>
+    <circle cx="6" cy="-49" r="15" stroke="#96CEB4" class="cluster" fill-opacity="0.2" fill="#96CEB4"/>
+    <circle cx="-30" cy="-39" r="15" stroke="#9D65C9" class="cluster" fill-opacity="0.2" fill="#9D65C9"/>
+    
+    <!-- Label for clusters -->
+    <text x="0" y="-70" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="12">
+      Centroid Cache
+    </text>
+  </g>
+
+  <!-- LLM Box -->
+  <g transform="translate(300, 400)" class="llm-box" opacity="0.4">
+    <animate attributeName="opacity" 
+             values="0.4;0.4;0.4;0.4;0.4;0.4;0.4;0.4;0.4;0.4;0.4;0.4;1;1;0.4;0.4;0.4;0.4;0.4;0.4" 
+             dur="10s" 
+             begin="0s" 
+             repeatCount="indefinite"/>
+    <rect x="-40" y="-20" width="80" height="40" rx="5" 
+          fill="none" stroke="#ffffff" stroke-width="2"/>
+    <text x="0" y="5" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="14">
+      LLM
+    </text>
+  </g>
+
+  <!-- Homomorphic encryption box -->
+  <g transform="translate(500, 300)">
+    <rect x="-60" y="-150" width="120" height="300" rx="10" 
+          fill="none" stroke="#4A90E2" stroke-width="2" 
+          stroke-dasharray="5,5"/>
+    
+    <!-- Padlock icon - moved down from -50 to -30 -->
+    <g transform="translate(0, -30)">
+      <!-- Lock body -->
+      <rect x="-10" y="-5" width="20" height="15" rx="3" 
+            fill="none" stroke="#4A90E2" stroke-width="2"/>
+      <!-- Lock shackle -->
+      <path d="M -6 -5 
+               a 6 8 0 0 1 12 0" 
+            fill="none" 
+            stroke="#4A90E2" 
+            stroke-width="2"
+            stroke-linecap="round"/>
+    </g>
+    
+    <text x="0" y="0" text-anchor="middle" fill="#4A90E2" font-family="sans-serif" font-size="12">
+      Homomorphic
+      <tspan x="0" dy="15">Encryption</tspan>
+    </text>
+  </g>
+
+  <!-- Database shards - positioned at y=225 -->
+  <g transform="translate(700, 225)">
+    <!-- Database 1 -->
+    <g class="shard active-shard" fill-opacity="0.2">
+      <path d="M -40 -20 
+               a 40 10 0 0 1 80 0
+               v 30
+               a 40 10 0 0 1 -80 0
+               v -30" 
+            fill="#FF6B6B"
+            stroke="#FF6B6B"
+            stroke-width="1">
+        <animate attributeName="fill-opacity" 
+                 values="0.2;0.2;0.2;0.2;0.2;0.2;0.8;0.8;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2" 
+                 dur="10s" 
+                 begin="0s" 
+                 repeatCount="indefinite"/>
+      </path>
+      <ellipse cx="0" cy="-20" rx="40" ry="10" 
+               fill="#FF6B6B"
+               stroke="#FF6B6B"
+               stroke-width="1">
+        <animate attributeName="fill-opacity" 
+                 values="0.2;0.2;0.2;0.2;0.2;0.2;0.8;0.8;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2;0.2" 
+                 dur="10s" 
+                 begin="0s" 
+                 repeatCount="indefinite"/>
+      </ellipse>
+    </g>
+
+    <!-- Database 2 -->
+    <g class="shard" fill-opacity="0.2">
+      <path d="M -40 30 
+               a 40 10 0 0 1 80 0
+               v 30
+               a 40 10 0 0 1 -80 0
+               v -30" 
+            fill="#4ECDC4"
+            stroke="#4ECDC4"
+            stroke-width="1"/>
+      <ellipse cx="0" cy="30" rx="40" ry="10" 
+               fill="#4ECDC4"
+               stroke="#4ECDC4"
+               stroke-width="1"/>
+    </g>
+
+    <!-- Database 3 -->
+    <g class="shard" fill-opacity="0.2">
+      <path d="M -40 80 
+               a 40 10 0 0 1 80 0
+               v 30
+               a 40 10 0 0 1 -80 0
+               v -30" 
+            fill="#96CEB4"
+            stroke="#96CEB4"
+            stroke-width="1"/>
+      <ellipse cx="0" cy="80" rx="40" ry="10" 
+               fill="#96CEB4"
+               stroke="#96CEB4"
+               stroke-width="1"/>
+    </g>
+
+    <!-- Database 4 -->
+    <g class="shard" fill-opacity="0.2">
+      <path d="M -40 130 
+               a 40 10 0 0 1 80 0
+               v 30
+               a 40 10 0 0 1 -80 0
+               v -30" 
+            fill="#9D65C9"
+            stroke="#9D65C9"
+            stroke-width="1"/>
+      <ellipse cx="0" cy="130" rx="40" ry="10" 
+               fill="#9D65C9"
+               stroke="#9D65C9"
+               stroke-width="1"/>
+    </g>
+  </g>
+
+  <!-- Animated elements -->
+  <style>
+    /* Base animations */
+    .user-message {
+      opacity: 0;
+      animation: message-sequence 4s linear infinite;
+    }
+
+    .cluster:first-of-type {
+      fill-opacity: 0.2;
+      animation: cluster-sequence 4s linear infinite;
+    }
+
+    .query-arrow, .query-text {
+      opacity: 0;
+      animation: query-sequence 4s linear infinite;
+    }
+
+    .active-shard {
+      fill-opacity: 0.2;
+      animation: shard-sequence 4s linear infinite;
+    }
+
+    .response-arrow, .response-text {
+      opacity: 0;
+      animation: response-sequence 4s linear infinite;
+    }
+
+    .llm-box {
+      opacity: 0.2;
+      animation: llm-sequence 4s linear infinite;
+    }
+
+    .response {
+      opacity: 0;
+      animation: chat-response-sequence 4s linear infinite;
+    }
+
+    /* Keyframe definitions using value sequences */
+    @keyframes message-sequence {
+      values: "0;1;1;1;1;1;1;0";
+      dur: "4s";
+      repeatCount: "indefinite";
+    }
+
+    @keyframes cluster-sequence {
+      values: "0.2;0.2;0.8;0.2;0.2;0.2;0.2;0.2";
+      dur: "4s";
+      repeatCount: "indefinite";
+    }
+
+    @keyframes query-sequence {
+      values: "0;0;0;1;1;1;1;0";
+      dur: "4s";
+      repeatCount: "indefinite";
+    }
+
+    @keyframes shard-sequence {
+      values: "0.2;0.2;0.2;0.2;0.8;0.2;0.2;0.2";
+      dur: "4s";
+      repeatCount: "indefinite";
+    }
+
+    @keyframes response-sequence {
+      values: "0;0;0;0;0;1;1;0";
+      dur: "4s";
+      repeatCount: "indefinite";
+    }
+
+    @keyframes llm-sequence {
+      values: "0.2;0.2;0.2;0.2;0.2;0.2;1;0.2";
+      dur: "4s";
+      repeatCount: "indefinite";
+    }
+
+    @keyframes chat-response-sequence {
+      values: "0;0;0;0;0;0;0;1";
+      dur: "4s";
+      repeatCount: "indefinite";
+    }
+
+    /* Flow arrow animation remains the same */
+    .flow-arrow {
+      opacity: 0;
+      stroke-dasharray: 10;
+      animation: 
+        flow-arrow 2s linear infinite;
+    }
+
+    @keyframes flow-arrow {
+      to {
+        stroke-dashoffset: -20;
+      }
+    }
+  </style>
+
+  <!-- Flow arrows -->
+  <g>
+    <!-- Query path and encryption -->
+    <g opacity="0">
+      <animate attributeName="opacity" 
+               values="0;0;0;0;0;0;1;1;1;1;1;1;1;1;1;1;1;1;1;1" 
+               dur="10s" 
+               begin="0s" 
+               repeatCount="indefinite"/>
+      <rect x="458" y="193" width="85" height="18" fill="#ff9800" rx="2"/>
+      <text x="461" y="205" fill="#333" font-family="monospace" font-size="12">+QpQZ4Y7KwA</text>
+    </g>
+
+    <!-- Query path -->
+    <path d="M 330 289
+             H 400
+             V 205
+             H 660" 
+          class="flow-arrow query-arrow"
+          stroke="#ff9800" 
+          stroke-width="2"
+          fill="none"
+          stroke-dasharray="10"
+          opacity="0">
+      <animate attributeName="opacity" 
+               values="0;0;0;0;0;0;1;1;1;1;1;1;1;1;1;1;1;1;1;1" 
+               dur="10s" 
+               begin="0s" 
+               repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Return path -->
+    <path d="M 660 235 
+             H 580 
+             V 400
+             H 340" 
+          class="flow-arrow response-arrow"
+          stroke="#ffeb3b" 
+          stroke-width="2"
+          fill="none"
+          stroke-dasharray="10"
+          opacity="0">
+      <animate attributeName="opacity" 
+               values="0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1;1;1;1;1" 
+               dur="10s" 
+               begin="0s" 
+               repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- Encrypted text -->
+  <g class="encrypted-text">
+    <!-- Query encryption -->
+    <g opacity="0">
+      <animate attributeName="opacity" 
+               values="0;0;0;0;0;0;1;1;1;1;1;1;1;1;1;1;1;1;1;1" 
+               dur="10s" 
+               begin="0s" 
+               repeatCount="indefinite"/>
+      <rect x="458" y="193" width="85" height="18" fill="#ff9800" rx="2"/>
+      <text x="461" y="205" fill="#333" font-family="monospace" font-size="12">+QpQZ4Y7KwA</text>
+    </g>
+    <!-- Response encryption -->
+    <g opacity="0">
+      <animate attributeName="opacity" 
+               values="0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1;1;1;1;1" 
+               dur="10s" 
+               begin="0s" 
+               repeatCount="indefinite"/>
+      <rect x="458" y="388" width="85" height="18" fill="#ffeb3b" rx="2"/>
+      <text x="461" y="400" fill="#333" font-family="monospace" font-size="12">+TolnJGOdmA</text>
+    </g>
+  </g>
+</svg> 
