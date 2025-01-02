@@ -1,19 +1,26 @@
-# Private Market Data Search
+# Private Search Implementation
 
-A privacy-preserving search system for real-time market prices using PIR (Private Information Retrieval). Get live stock and cryptocurrency prices while maintaining privacy.
+A privacy-preserving search system based on Private Information Retrieval (PIR) techniques. This implementation allows you to search through data while maintaining query privacy - the server never learns what you're searching for.
 
 ## Features
-- Live stock prices from major companies (Apple, NVIDIA, Microsoft, etc.)
-- Live cryptocurrency prices (Bitcoin, Ethereum, Solana)
-- Privacy-preserving queries using PIR
-- Automatic price updates every minute
+- Privacy-preserving search using PIR
+- Local embedding generation
+- Clustering-based optimization for faster searches
 - FastAPI-based REST API
 - Interactive API documentation at `/docs`
+
+## How It Works
+
+1. Documents are converted into embeddings and clustered for efficient searching
+2. The client downloads cluster centroids (~32 kB for a 1 GB database)
+3. The client locally compares query vectors to centroids to find relevant clusters
+4. Using SimplePIR, the client privately retrieves matching documents
+5. All queries remain private - the server never sees what you're searching for
 
 ## Setup
 
 ```bash
-pip install numpy yfinance requests tabulate sentence-transformers scikit-learn fastapi uvicorn aiohttp
+pip install -r requirements.txt
 ```
 
 ## Usage
@@ -28,22 +35,13 @@ python server.py
 python client.py
 ```
 
-3. Enter search queries to find market prices. Example queries:
-   - "bitcoin price"
-   - "tesla stock"
-   - "nvidia shares"
-   - "eth price"
-   - "apple stock price"
-
-The system automatically updates prices every minute.
+3. Enter natural language queries to search through the documents privately.
 
 ## API Documentation
 
 Visit `http://127.0.0.1:8000/docs` for interactive API documentation.
 
 ## Docker Deployment
-
-You can also run the server using Docker:
 
 1. Build the Docker image:
 ```bash
@@ -55,14 +53,32 @@ docker build -t private-search .
 docker run -p 8000:8000 private-search
 ```
 
-3. Save the Docker image to a file:
-```bash
-docker save private-search > private-search.tar
-```
+## Architecture
 
-4. Load the saved image on another machine:
-```bash
-docker load < private-search.tar
-```
+The system uses a combination of:
+- Sentence transformers for embedding generation
+- K-means clustering for search optimization
+- SimplePIR for private information retrieval
+- FastAPI for the REST API interface
 
-The server will be available at `http://localhost:8000`. You can access the API documentation at `http://localhost:8000/docs`. 
+## Privacy Guarantees
+
+- Queries are never revealed to the server
+- Document retrieval patterns remain private
+- All sensitive computations happen client-side
+- Server only sees encrypted PIR queries
+
+## Performance
+
+The clustering-based approach provides significant performance improvements:
+- Reduces the number of PIR operations needed
+- Allows for efficient searching in large document collections
+- Maintains privacy while providing fast results
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is open source and available under the MIT License. 
