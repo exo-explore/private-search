@@ -17,7 +17,7 @@ A privacy-preserving search system based on [MIT's Tiptoe paper](https://people.
 4. Using SimplePIR, the client privately retrieves matching documents
 5. All queries remain private - the server never sees what you're searching for
 
-![Architecture Animations](architecture.svg)
+![Architecture Animation](architecture-animation.svg)
 
 *Architecture overview of private search with homomorphic encryption. The query is encrypted before being sent to the server, which processes it without being able to see the contents. The encrypted results are sent back to the client for decryption.*
 
