@@ -21,7 +21,7 @@ def gen_params(m: int, n: int = 2048, mod_power: int = 17) -> SimplePIRParams:
     q = np.uint64(2**64 - 1)
     p = np.uint64(2**mod_power)
     std_dev = 3.2
-    seed = np.random.randint(0, 2**32)  # Generate random seed
+    seed = np.random.randint(0, 2**31)  # Generate random seed
     
     return SimplePIRParams(n=n, m=m, q=int(q), p=int(p), std_dev=std_dev, seed=seed)
 
