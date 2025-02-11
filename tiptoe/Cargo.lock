@@ -2661,7 +2661,7 @@ dependencies = [
 [[package]]
 name = "simplepir"
 version = "0.1.0"
-source = "git+https://github.com/0xWOLAND/simplepir-rs#b1682aa4089625ff039e3d53cf7dc6a6fb588b7f"
+source = "git+https://github.com/0xWOLAND/simplepir#b1682aa4089625ff039e3d53cf7dc6a6fb588b7f"
 dependencies = [
  "nalgebra",
  "num-bigint",
@@ -2937,7 +2937,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tiptoe-rs"
+name = "tiptoe"
 version = "0.1.0"
 dependencies = [
  "anyhow",

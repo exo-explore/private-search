@@ -1,6 +1,6 @@
 # Optimizations
 
-## [SimplePIR](https://github.com/0xWOLAND/simplepir-rs) 
+## [SimplePIR](https://github.com/0xWOLAND/simplepir) 
 - Posisbly use fixed-size arithmetic instead of `BigInt`
     - I ran into overflow problems when computing the inner product of the embeddings, so this might not be possible
     - Use faster matrix-multiplication algorithms

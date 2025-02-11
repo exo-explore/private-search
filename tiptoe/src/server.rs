@@ -97,7 +97,7 @@ impl Database for EmbeddingDatabase {
         let path = env::var("CARGO_MANIFEST_DIR").map_or_else(
             |_| {
                 let mut p = env::current_dir().unwrap();
-                p.push("tiptoe-rs/src/python/stocks.py");
+                p.push("tiptoe/src/python/stocks.py");
                 p
             },
             |manifest_dir| {
@@ -165,7 +165,7 @@ impl Database for EncodingDatabase {
         let path = env::var("CARGO_MANIFEST_DIR").map_or_else(
             |_| {
                 let mut p = env::current_dir().unwrap();
-                p.push("tiptoe-rs/src/python/stocks.py");
+                p.push("tiptoe/src/python/stocks.py");
                 p
             },
             |manifest_dir| {

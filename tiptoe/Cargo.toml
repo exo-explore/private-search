@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-simplepir = { path = "../simplepir-rs" }
+simplepir = { path = "../simplepir" }
 candle = { package = "candle-core", version = "0.3" }
 candle-nn = "0.3"
 candle-transformers = "0.3"

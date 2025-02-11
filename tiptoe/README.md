@@ -1,4 +1,4 @@
-# Tiptoe-rs
+# tiptoe
 
 A Private Information Retrieval (PIR) implementation in Rust that supports both local and networked operation modes.
 
