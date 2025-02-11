@@ -3,7 +3,7 @@
 A privacy-preserving search system based on [MIT's Tiptoe paper](https://people.csail.mit.edu/nickolai/papers/henzinger-tiptoe.pdf). This implementation allows you to search through data while maintaining query privacy - the server never learns what you're searching for. For more details, see our [blog](https://blog.exolabs.net/day-8/).
 
 ## Project Structure
-- [`simplepir`](simplepir/README.md) – a Rust implementation of [SimplePIR](https://eprint.iacr.org/2022/949) (Henzinger et. al.)
+- [`simplepir`](simplepir/README.md) – a Rust implementation of [SimplePIR](https://eprint.iacr.org/2022/949) (Henzinger et al.)
 - [`tiptoe`](tiptoe/README.md) – implements [Tiptoe](https://eprint.iacr.org/2023/1438) and queries real-time stock/crypto prices from Yahoo Finance's API. 
 
 ## Features
