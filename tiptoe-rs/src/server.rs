@@ -1,5 +1,4 @@
 use anyhow::Result;
-use axum::extract::path;
 use nalgebra::{DMatrix, DVector};
 use num_bigint::BigInt;
 use serde_json::Value;
@@ -95,8 +94,7 @@ impl Database for EmbeddingDatabase {
 
     fn update(&mut self) -> Result<()> {
         // If running as a binary, use the current directory otherwise use the manifest directory
-        let path = env::var("CARGO_MANIFEST_DIR")
-        .map_or_else(
+        let path = env::var("CARGO_MANIFEST_DIR").map_or_else(
             |_| {
                 let mut p = env::current_dir().unwrap();
                 p.push("tiptoe-rs/src/python/stocks.py");
@@ -164,8 +162,7 @@ impl Database for EncodingDatabase {
 
     fn update(&mut self) -> Result<()> {
         // If running as a binary, use the current directory otherwise use the manifest directory
-        let path = env::var("CARGO_MANIFEST_DIR")
-        .map_or_else(
+        let path = env::var("CARGO_MANIFEST_DIR").map_or_else(
             |_| {
                 let mut p = env::current_dir().unwrap();
                 p.push("tiptoe-rs/src/python/stocks.py");

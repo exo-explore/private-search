@@ -222,7 +222,7 @@ mod tests {
             for i in 0..matrix_height {
                 let mut sum = BigInt::zero();
                 for j in 0..matrix_width {
-                    sum = sum + &d[(i, j)] * &v[j];
+                    sum += &d[(i, j)] * &v[j];
                 }
                 result[i] = sum;
             }

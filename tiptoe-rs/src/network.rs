@@ -2,7 +2,6 @@ use anyhow::Result;
 use async_trait::async_trait;
 use axum::{
     extract::State,
-    routing::{get, post},
     Json, Router,
 };
 use nalgebra::{DMatrix, DVector};
@@ -12,7 +11,7 @@ use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use simplepir::{gen_params, generate_query, recover, SimplePIRParams};
 use std::{str::FromStr, sync::Arc, time::Duration};
-use tokio::{sync::RwLock, time::interval};
+use tokio::sync::RwLock;
 
 use crate::{embedding::BertEmbedder, server::Database};
 

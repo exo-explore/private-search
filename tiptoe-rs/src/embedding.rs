@@ -158,7 +158,7 @@ mod tests {
             " Habitant suspendisse nascetur in quis adipiscing",
         ];
 
-        let d = encode_data(&text.map(|x| x.to_string()).to_vec())
+        let d = encode_data(text.map(|x| x.to_string()).as_ref())
             .unwrap()
             .transpose();
         let matrix_height = d.nrows();
