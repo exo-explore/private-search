@@ -1,0 +1,13 @@
+[package]
+name = "simplepir"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rand_distr = "0.4"
+rand_chacha = "0.3"
+
+nalgebra = { workspace = true }
+rand = { workspace = true }
+num-bigint = { workspace = true, features = ["rand"] }
+num-traits = { workspace = true }
