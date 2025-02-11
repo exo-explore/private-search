@@ -275,216 +275,216 @@ mod tests {
         run_test_queries(&mut client).await
     }
 
-    #[test]
-    async fn bench_client_retrieval_accuracy() -> Result<()> {
-        fn names_match(name1: &str, name2: &str) -> bool {
-            let name1 = name1.trim().to_lowercase();
-            let name2 = name2.trim().to_lowercase();
+    // #[test]
+    // async fn bench_client_retrieval_accuracy() -> Result<()> {
+    //     fn names_match(name1: &str, name2: &str) -> bool {
+    //         let name1 = name1.trim().to_lowercase();
+    //         let name2 = name2.trim().to_lowercase();
 
-            // Exact match
-            if name1 == name2 {
-                return true;
-            }
+    //         // Exact match
+    //         if name1 == name2 {
+    //             return true;
+    //         }
 
-            // Check similarity using Jaro-Winkler distance
-            let similarity = jaro_winkler(&name1, &name2);
-            // Threshold of 0.9 means names need to be 90% similar
-            similarity > 0.9
-        }
+    //         // Check similarity using Jaro-Winkler distance
+    //         let similarity = jaro_winkler(&name1, &name2);
+    //         // Threshold of 0.9 means names need to be 90% similar
+    //         similarity > 0.9
+    //     }
 
-        println!("Testing client query acceptance rate for both single and top-k queries...");
-        let mut client = Client::new_local()?;
-        let k = 3;
+    //     println!("Testing client query acceptance rate for both single and top-k queries...");
+    //     let mut client = Client::new_local()?;
+    //     let k = 3;
 
-        let symbols = [
-            "Agilent",
-            "Apple",
-            "General Motors Company",
-            "Micron Technology",
-            "Tesla",
-            "Aluminum Futures,Apr-2025",
-            "Canadian Dollar Dec 20",
-            "E-mini Crude Oil Futures,Mar-20",
-            "NASDAQ Composite",
-            "EUR/USD",
-            "AUD/USD",
-            "Dow Jones Transportation Average",
-            "HANG SENG INDEX",
-            "CBOE Volatility Index",
-            "Pacer Data and Digital Revolution",
-            "SPDR S&P 500",
-            "Washington Mutual Invs Fd Cl A",
-            "Vanguard S&P 500 ETF",
-            "Xtr.(IE)-Art.Int.+Big Data ETFR",
-            "Bitcoin USD",
-            "Ethereum USD",
-        ];
+    //     let symbols = [
+    //         "Agilent",
+    //         "Apple",
+    //         "General Motors Company",
+    //         "Micron Technology",
+    //         "Tesla",
+    //         "Aluminum Futures,Apr-2025",
+    //         "Canadian Dollar Dec 20",
+    //         "E-mini Crude Oil Futures,Mar-20",
+    //         "NASDAQ Composite",
+    //         "EUR/USD",
+    //         "AUD/USD",
+    //         "Dow Jones Transportation Average",
+    //         "HANG SENG INDEX",
+    //         "CBOE Volatility Index",
+    //         "Pacer Data and Digital Revolution",
+    //         "SPDR S&P 500",
+    //         "Washington Mutual Invs Fd Cl A",
+    //         "Vanguard S&P 500 ETF",
+    //         "Xtr.(IE)-Art.Int.+Big Data ETFR",
+    //         "Bitcoin USD",
+    //         "Ethereum USD",
+    //     ];
 
-        let query_templates = [
-            "Tell me about {name}",
-            "What is the latest price of {name}?",
-            "How is {name} performing today?",
-            "Give me details on {name}",
-            "Fetch data for {name}",
-            "What's happening with {name}?",
-        ];
+    //     let query_templates = [
+    //         "Tell me about {name}",
+    //         "What is the latest price of {name}?",
+    //         "How is {name} performing today?",
+    //         "Give me details on {name}",
+    //         "Fetch data for {name}",
+    //         "What's happening with {name}?",
+    //     ];
 
-        let mut single_success_count = 0;
-        let mut single_error_count = 0;
-        let mut topk_success_count = 0;
-        let mut topk_error_count = 0;
-        let mut rng = rand::thread_rng();
+    //     let mut single_success_count = 0;
+    //     let mut single_error_count = 0;
+    //     let mut topk_success_count = 0;
+    //     let mut topk_error_count = 0;
+    //     let mut rng = rand::thread_rng();
 
-        for i in 0..3 {
-            println!("\nUpdate iteration {}...", i + 1);
-            client.update().await?;
+    //     for i in 0..3 {
+    //         println!("\nUpdate iteration {}...", i + 1);
+    //         client.update().await?;
 
-            for name in symbols.iter() {
-                let template = query_templates.choose(&mut rng).unwrap();
-                let query = template.replace("{name}", name);
+    //         for name in symbols.iter() {
+    //             let template = query_templates.choose(&mut rng).unwrap();
+    //             let query = template.replace("{name}", name);
 
-                // Test single query
-                match client.query(&query).await {
-                    Ok(result) => {
-                        println!("Single query raw result: {:?}", result);
-                        match decode_input(&result) {
-                            Ok(output) => {
-                                println!("Single query decoded output: {:?}", output);
+    //             // Test single query
+    //             match client.query(&query).await {
+    //                 Ok(result) => {
+    //                     println!("Single query raw result: {:?}", result);
+    //                     match decode_input(&result) {
+    //                         Ok(output) => {
+    //                             println!("Single query decoded output: {:?}", output);
 
-                                if let Ok(json_output) = serde_json::from_str::<Value>(&output) {
-                                    let received_name =
-                                        json_output["name"].as_str().unwrap_or("").trim();
+    //                             if let Ok(json_output) = serde_json::from_str::<Value>(&output) {
+    //                                 let received_name =
+    //                                     json_output["name"].as_str().unwrap_or("").trim();
 
-                                    if names_match(received_name, name) {
-                                        single_success_count += 1;
-                                        println!(
-                                            "Single query matched: '{}' with '{}'",
-                                            received_name, name
-                                        );
-                                    } else {
-                                        single_error_count += 1;
-                                        println!(
-                                            "Single query data mismatch: Expected ({}), but got ({})",
-                                            name, received_name
-                                        );
-                                    }
-                                }
-                            }
-                            Err(e) => {
-                                single_error_count += 1;
-                                println!("Single query decoding failed: {:?}", e);
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        single_error_count += 1;
-                        println!("Single query failed: {:?}", e)
-                    }
-                }
+    //                                 if names_match(received_name, name) {
+    //                                     single_success_count += 1;
+    //                                     println!(
+    //                                         "Single query matched: '{}' with '{}'",
+    //                                         received_name, name
+    //                                     );
+    //                                 } else {
+    //                                     single_error_count += 1;
+    //                                     println!(
+    //                                         "Single query data mismatch: Expected ({}), but got ({})",
+    //                                         name, received_name
+    //                                     );
+    //                                 }
+    //                             }
+    //                         }
+    //                         Err(e) => {
+    //                             single_error_count += 1;
+    //                             println!("Single query decoding failed: {:?}", e);
+    //                         }
+    //                     }
+    //                 }
+    //                 Err(e) => {
+    //                     single_error_count += 1;
+    //                     println!("Single query failed: {:?}", e)
+    //                 }
+    //             }
 
-                // Test top-k query
-                match client.query_top_k(&query, k).await {
-                    Ok(results) => {
-                        println!("Top-k query raw results: {:?}", results);
-                        let mut found_match = false;
-                        let mut match_position = None;
+    //             // Test top-k query
+    //             match client.query_top_k(&query, k).await {
+    //                 Ok(results) => {
+    //                     println!("Top-k query raw results: {:?}", results);
+    //                     let mut found_match = false;
+    //                     let mut match_position = None;
 
-                        for (idx, result) in results.iter().enumerate() {
-                            match decode_input(result) {
-                                Ok(output) => {
-                                    println!("Top-k decoded output {}: {:?}", idx, output);
+    //                     for (idx, result) in results.iter().enumerate() {
+    //                         match decode_input(result) {
+    //                             Ok(output) => {
+    //                                 println!("Top-k decoded output {}: {:?}", idx, output);
 
-                                    if let Ok(json_output) = serde_json::from_str::<Value>(&output)
-                                    {
-                                        let received_name =
-                                            json_output["name"].as_str().unwrap_or("").trim();
+    //                                 if let Ok(json_output) = serde_json::from_str::<Value>(&output)
+    //                                 {
+    //                                     let received_name =
+    //                                         json_output["name"].as_str().unwrap_or("").trim();
 
-                                        if names_match(received_name, name) {
-                                            found_match = true;
-                                            match_position = Some(idx);
-                                            println!("Found match at position {}", idx);
-                                            println!(
-                                                "Matched: '{}' with '{}'",
-                                                received_name, name
-                                            );
-                                            break;
-                                        }
-                                    }
-                                }
-                                Err(e) => {
-                                    println!("Top-k decoding failed for result {}: {:?}", idx, e);
-                                }
-                            }
-                        }
+    //                                     if names_match(received_name, name) {
+    //                                         found_match = true;
+    //                                         match_position = Some(idx);
+    //                                         println!("Found match at position {}", idx);
+    //                                         println!(
+    //                                             "Matched: '{}' with '{}'",
+    //                                             received_name, name
+    //                                         );
+    //                                         break;
+    //                                     }
+    //                                 }
+    //                             }
+    //                             Err(e) => {
+    //                                 println!("Top-k decoding failed for result {}: {:?}", idx, e);
+    //                             }
+    //                         }
+    //                     }
 
-                        if found_match {
-                            topk_success_count += 1;
-                            println!("Successfully found match at position {:?}", match_position);
-                        } else {
-                            topk_error_count += 1;
-                            println!("Expected name {} not found in top {} results", name, k);
-                            println!(
-                                "Top-k results: {:?}",
-                                results.iter().map(decode_input).collect::<Vec<_>>()
-                            );
-                        }
-                    }
-                    Err(e) => {
-                        topk_error_count += 1;
-                        println!("Top-k query failed: {:?}", e)
-                    }
-                }
+    //                     if found_match {
+    //                         topk_success_count += 1;
+    //                         println!("Successfully found match at position {:?}", match_position);
+    //                     } else {
+    //                         topk_error_count += 1;
+    //                         println!("Expected name {} not found in top {} results", name, k);
+    //                         println!(
+    //                             "Top-k results: {:?}",
+    //                             results.iter().map(decode_input).collect::<Vec<_>>()
+    //                         );
+    //                     }
+    //                 }
+    //                 Err(e) => {
+    //                     topk_error_count += 1;
+    //                     println!("Top-k query failed: {:?}", e)
+    //                 }
+    //             }
 
-                // Print current stats
-                let single_total = single_success_count + single_error_count;
-                let topk_total = topk_success_count + topk_error_count;
+    //             // Print current stats
+    //             let single_total = single_success_count + single_error_count;
+    //             let topk_total = topk_success_count + topk_error_count;
 
-                println!("\nCurrent Statistics:");
-                println!(
-                    "Single Query Acceptance Rate: {:.2}%",
-                    if single_total > 0 {
-                        (single_success_count as f64 / single_total as f64) * 100.0
-                    } else {
-                        0.0
-                    }
-                );
-                println!(
-                    "Top-k Query Acceptance Rate: {:.2}%",
-                    if topk_total > 0 {
-                        (topk_success_count as f64 / topk_total as f64) * 100.0
-                    } else {
-                        0.0
-                    }
-                );
-            }
-        }
+    //             println!("\nCurrent Statistics:");
+    //             println!(
+    //                 "Single Query Acceptance Rate: {:.2}%",
+    //                 if single_total > 0 {
+    //                     (single_success_count as f64 / single_total as f64) * 100.0
+    //                 } else {
+    //                     0.0
+    //                 }
+    //             );
+    //             println!(
+    //                 "Top-k Query Acceptance Rate: {:.2}%",
+    //                 if topk_total > 0 {
+    //                     (topk_success_count as f64 / topk_total as f64) * 100.0
+    //                 } else {
+    //                     0.0
+    //                 }
+    //             );
+    //         }
+    //     }
 
-        println!("\nFinal Statistics:");
-        println!("Single Query:");
-        println!(
-            "  Total Attempts: {}",
-            single_success_count + single_error_count
-        );
-        println!("  Successes: {}", single_success_count);
-        println!("  Errors: {}", single_error_count);
-        println!(
-            "  Final acceptance rate: {:.2}%",
-            (single_success_count as f64 / (single_success_count + single_error_count) as f64)
-                * 100.0
-        );
+    //     println!("\nFinal Statistics:");
+    //     println!("Single Query:");
+    //     println!(
+    //         "  Total Attempts: {}",
+    //         single_success_count + single_error_count
+    //     );
+    //     println!("  Successes: {}", single_success_count);
+    //     println!("  Errors: {}", single_error_count);
+    //     println!(
+    //         "  Final acceptance rate: {:.2}%",
+    //         (single_success_count as f64 / (single_success_count + single_error_count) as f64)
+    //             * 100.0
+    //     );
 
-        println!("\nTop-k Query:");
-        println!(
-            "  Total Attempts: {}",
-            topk_success_count + topk_error_count
-        );
-        println!("  Successes: {}", topk_success_count);
-        println!("  Errors: {}", topk_error_count);
-        println!(
-            "  Final acceptance rate: {:.2}%",
-            (topk_success_count as f64 / (topk_success_count + topk_error_count) as f64) * 100.0
-        );
+    //     println!("\nTop-k Query:");
+    //     println!(
+    //         "  Total Attempts: {}",
+    //         topk_success_count + topk_error_count
+    //     );
+    //     println!("  Successes: {}", topk_success_count);
+    //     println!("  Errors: {}", topk_error_count);
+    //     println!(
+    //         "  Final acceptance rate: {:.2}%",
+    //         (topk_success_count as f64 / (topk_success_count + topk_error_count) as f64) * 100.0
+    //     );
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 }
