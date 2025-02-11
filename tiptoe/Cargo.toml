@@ -1,0 +1,40 @@
+[package]
+name = "tiptoe"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+simplepir = { path = "../simplepir" }
+candle = { package = "candle-core", version = "0.3" }
+candle-nn = "0.3"
+candle-transformers = "0.3"
+hf-hub = "0.3"
+tokenizers = "0.13"
+serde_json = "1.0"
+serde = "1.0.217"
+tokio = { version = "1.43.0", features = ["full"] }
+reqwest = { version = "0.12.12", features = ["json"] }
+axum = "0.8.1"
+async-trait = "0.1.86"
+axum-server = "0.7.1"
+thiserror = "2.0.11"
+anyhow = "1.0.95"
+
+nalgebra = { workspace = true }
+num-bigint = { workspace = true }
+num-traits = { workspace = true }
+rand = { workspace = true }
+
+[dev-dependencies]
+strsim = "0.11.1"
+
+[[bin]]
+name = "encoding_server"
+path = "src/bin/encoding_server.rs"
+
+[[bin]]
+name = "embedding_server"
+path = "src/bin/embedding_server.rs"
+
+[features]
+remote-tests = []

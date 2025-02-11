@@ -1,0 +1,9 @@
+[workspace]
+members = ["tiptoe", "simplepir"]
+resolver = "2"
+
+[workspace.dependencies]
+nalgebra = "0.32"
+num-bigint = "0.4.6"
+num-traits = "0.2.19"
+rand = "0.8.0"
