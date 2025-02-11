@@ -70,7 +70,7 @@ pub fn encode_data(data: &[String]) -> Result<DMatrix<BigInt>> {
 pub fn decode_data(data: &DMatrix<BigInt>) -> Result<Vec<String>> {
     data.column_iter()
         .map(|row| decode_input(&row.into_owned()).map(|s| s.trim_end_matches('\0').to_string()))
-        .filter(|r| r.as_ref().map_or(false, |s| !s.is_empty()))
+        .filter(|r| r.as_ref().is_ok_and(|s| !s.is_empty()))
         .collect()
 }
 
