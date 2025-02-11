@@ -1,9 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use axum::{
-    extract::State,
-    Json, Router,
-};
+use axum::{extract::State, Json, Router};
 use nalgebra::{DMatrix, DVector};
 use num_bigint::BigInt;
 use num_traits::One;
