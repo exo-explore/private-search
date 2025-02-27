@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  encoding-server:
+    build:
+      context: ..
+      dockerfile: tiptoe/Dockerfile
+    command: ./encoding_server
+    ports:
+      - "3000:3000"
+    environment:
+      - CARGO_MANIFEST_DIR=/app
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    restart: unless-stopped
+
+  embedding-server:
+    build:
+      context: ..
+      dockerfile: tiptoe/Dockerfile
+    command: ./embedding_server
+    ports:
+      - "3001:3001"
+    environment:
+      - CARGO_MANIFEST_DIR=/app
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "3001"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s 
